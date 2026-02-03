@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Arrow Function Practice</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Syne:wght@700&display=swap');
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  :root {
+    --left-bg: #d6e8f5;
+    --right-bg: #faf0c8;
+    --left-text: #2a4a6a;
+    --right-text: #6a5010;
+    --left-label: #3a5a7a;
+    --right-label: #7a6020;
+  }
+
+  body {
+    height: 100vh;
+    display: flex;
+    font-family: 'IBM Plex Mono', monospace;
+    overflow: hidden;
+  }
+
+  /* ── Left Panel ── */
+  .panel-left {
+    flex: 1;
+    background: var(--left-bg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 60px 40px 40px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .panel-label {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    margin-bottom: 20px;
+    color: var(--left-label);
+  }
+
+  .code-box {
+    width: 100%;
+    max-width: 380px;
+    background: rgba(255,255,255,0.55);
+    border-radius: 12px;
+    padding: 28px;
+    color: var(--left-text);
+  }
+
+  .code-box pre {
+    font-size: 15px;
+    line-height: 1.7;
+    white-space: pre-wrap;
+  }
+
+  .kw { color: #4a7a9e; font-weight: 600; }
+  .fn { color: #c08a20; font-weight: 500; }
+
+  /* ── Right Panel ── */
+  .panel-right {
+    flex: 1;
+    background: var(--right-bg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 40px 40px 60px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .panel-right .panel-label {
+    color: var(--right-label);
+  }
+
+  .code-input-wrapper {
+    width: 100%;
+    max-width: 380px;
+    background: rgba(255,255,255,0.5);
+    border-radius: 12px;
+    padding: 28px;
+    min-height: 130px;
+    border: 2px dashed rgba(160, 130, 50, 0.4);
+    position: relative;
+  }
+
+  .code-input-wrapper.correct {
+    border-color: #5aaa8a;
+    background: rgba(90, 170, 138, 0.1);
+  }
+
+  .code-input-wrapper.incorrect {
+    border-color: #d05a5a;
+    background: rgba(208, 90, 90, 0.1);
+  }
+
+  #user-input {
+    width: 100%;
+    min-height: 80px;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 15px;
+    line-height: 1.7;
+    color: var(--right-text);
+    resize: vertical;
+  }
+
+  #user-input::placeholder {
+    opacity: 0.5;
+    font-style: italic;
+  }
+
+  .feedback-message {
+    margin-top: 12px;
+    font-size: 13px;
+    min-height: 20px;
+    color: var(--right-text);
+  }
+
+  .feedback-message.correct {
+    color: #2e6b56;
+    font-weight: 600;
+  }
+
+  .feedback-message.incorrect {
+    color: #a03030;
+    font-weight: 600;
+  }
+
+  /* ── Arrow in the middle ── */
+  .arrow-container {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    pointer-events: none;
+  }
+
+  .arrow-shaft {
+    width: 50px;
+    height: 28px;
+    background: var(--left-bg);
+  }
+
+  .arrow-head {
+    width: 0;
+    height: 0;
+    border-top: 40px solid transparent;
+    border-bottom: 40px solid transparent;
+    border-left: 50px solid var(--left-bg);
+  }
+
+  /* ── Progress dots ── */
+  .progress {
+    position: fixed;
+    top: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 10px;
+    z-index: 20;
+  }
+
+  .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #c0d8ec;
+    transition: all 0.3s;
+  }
+
+  .dot.active {
+    background: #4a7a9e;
+    box-shadow: 0 0 6px rgba(74, 122, 158, 0.5);
+  }
+
+  .dot.completed {
+    background: #5aaa8a;
+  }
+
+  /* ── Feedback bar at bottom ── */
+  .feedback-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 56px;
+    background: #f5f8fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    z-index: 20;
+    border-top: 1px solid rgba(0,0,0,0.06);
+  }
+
+  .btn {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 8px 24px;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+  }
+
+  .btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+  }
+
+  .btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .btn-hint {
+    background: #faf0c8;
+    color: #7a6020;
+  }
+
+  .btn-check {
+    background: #5a8ab0;
+    color: #fff;
+  }
+
+  .btn-next {
+    background: #e8b840;
+    color: #fff;
+  }
+</style>
+</head>
+<body>
+
+  <!-- Progress dots -->
+  <div class="progress" id="progress-dots">
+    <!-- Will be filled by JS -->
+  </div>
+
+  <!-- Left panel: the given function -->
+  <div class="panel-left">
+    <div class="panel-label">Given</div>
+    <div class="code-box">
+      <pre id="given-code"></pre>
+    </div>
+  </div>
+
+  <!-- Arrow bleeding from left into right -->
+  <div class="arrow-container">
+    <div class="arrow-shaft"></div>
+    <div class="arrow-head"></div>
+  </div>
+
+  <!-- Right panel: user's rewrite -->
+  <div class="panel-right">
+    <div class="panel-label">Rewrite as arrow function</div>
+    <div class="code-input-wrapper" id="input-wrapper">
+      <textarea 
+        id="user-input" 
+        placeholder="type your answer here..."
+        spellcheck="false"
+      ></textarea>
+      <div class="feedback-message" id="feedback"></div>
+    </div>
+  </div>
+
+  <!-- Bottom feedback bar -->
+  <div class="feedback-bar">
+    <button class="btn btn-hint" id="btn-hint">Hint</button>
+    <button class="btn btn-check" id="btn-check">Check</button>
+    <button class="btn btn-next" id="btn-next" disabled>Next →</button>
+  </div>
+
+<script>
+// ── Exercise Generation ──
+function randomChoice(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function randomInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+const names = ["greet", "add", "double", "square", "multiply", "format", "combine", "wrap", "prefix", "suffix", "negate", "invert", "clamp", "repeat", "tag"];
+const argNames = ["x", "y", "name", "a", "b", "n", "value", "num", "str", "text", "item", "count", "age", "width", "height"];
+
+function genBasicSingle() {
+  const name = randomChoice(names);
+  const arg = randomChoice(argNames);
+  const op = randomChoice(["+", "-", "*"]);
+  const val = randomInt(1, 10);
+  const testVal = randomInt(1, 20);
+
+  return {
+    category: "Basic single expression",
+    given: `function ${name}(${arg}) {\n  return ${arg} ${op} ${val};\n}`,
+    answer: `(${arg}) => ${arg} ${op} ${val}`,
+    testCode: `
+      var givenFn = function ${name}(${arg}) { return ${arg} ${op} ${val}; };
+      var answerFn = ANSWER;
+      return givenFn(${testVal}) === answerFn(${testVal});
+    `
+  };
+}
+
+function genMultipleArgs() {
+  const name = randomChoice(names);
+  const op = randomChoice(["+", "-", "*"]);
+  const t1 = randomInt(1, 10), t2 = randomInt(1, 10);
+
+  return {
+    category: "Multiple arguments",
+    given: `function ${name}(a, b) {\n  return a ${op} b;\n}`,
+    answer: `(a, b) => a ${op} b`,
+    testCode: `
+      var givenFn = function ${name}(a, b) { return a ${op} b; };
+      var answerFn = ANSWER;
+      return givenFn(${t1}, ${t2}) === answerFn(${t1}, ${t2});
+    `
+  };
+}
+
+function genNoArgs() {
+  const vals = ["42", '"hello"', "true", "Math.PI"];
+  const name = randomChoice(names);
+  const val = randomChoice(vals);
+
+  return {
+    category: "No arguments",
+    given: `function ${name}() {\n  return ${val};\n}`,
+    answer: `() => ${val}`,
+    testCode: `
+      var givenFn = function ${name}() { return ${val}; };
+      var answerFn = ANSWER;
+      return givenFn() === answerFn();
+    `
+  };
+}
+
+function genNoReturn() {
+  const name = randomChoice(["logValue", "printMsg", "showName", "announce", "display"]);
+  const arg = randomChoice(["msg", "value", "name", "text", "item"]);
+
+  return {
+    category: "No return (side effects)",
+    given: `function ${name}(${arg}) {\n  console.log(${arg});\n}`,
+    answer: `(${arg}) => { console.log(${arg}); }`,
+    testCode: `
+      var givenFn = function ${name}(${arg}) { console.log(${arg}); };
+      var answerFn = ANSWER;
+      return givenFn("test") === undefined && answerFn("test") === undefined;
+    `
+  };
+}
+
+function genMultiLine() {
+  const name = randomChoice(["process", "calculate", "compute", "transform", "convert"]);
+  const arg = randomChoice(["x", "n", "value", "num"]);
+  const op1 = randomChoice(["+", "*"]);
+  const val1 = randomInt(1, 5);
+  const op2 = randomChoice(["+", "-", "*"]);
+  const val2 = randomInt(1, 5);
+  const testVal = randomInt(1, 10);
+
+  return {
+    category: "Multi-line body",
+    given: `function ${name}(${arg}) {\n  var temp = ${arg} ${op1} ${val1};\n  return temp ${op2} ${val2};\n}`,
+    answer: `(${arg}) => { var temp = ${arg} ${op1} ${val1}; return temp ${op2} ${val2}; }`,
+    testCode: `
+      var givenFn = function ${name}(${arg}) { var temp = ${arg} ${op1} ${val1}; return temp ${op2} ${val2}; };
+      var answerFn = ANSWER;
+      return givenFn(${testVal}) === answerFn(${testVal});
+    `
+  };
+}
+
+function genObjectReturn() {
+  const name = randomChoice(["makeUser", "createPoint", "buildItem", "makeEntry", "createPair"]);
+  const key1 = randomChoice(["name", "x", "key", "first", "label"]);
+  const key2 = randomChoice(["age", "y", "value", "last", "desc"]);
+
+  return {
+    category: "Returning object literal",
+    given: `function ${name}(${key1}, ${key2}) {\n  return { ${key1}: ${key1}, ${key2}: ${key2} };\n}`,
+    answer: `(${key1}, ${key2}) => ({ ${key1}: ${key1}, ${key2}: ${key2} })`,
+    testCode: `
+      var givenFn = function ${name}(${key1}, ${key2}) { return { ${key1}: ${key1}, ${key2}: ${key2} }; };
+      var answerFn = ANSWER;
+      var a = givenFn("hello", 5);
+      var b = answerFn("hello", 5);
+      return a.${key1} === b.${key1} && a.${key2} === b.${key2};
+    `
+  };
+}
+
+const generators = [
+  genBasicSingle,
+  genMultipleArgs,
+  genNoArgs,
+  genNoReturn,
+  genObjectReturn
+];
+
+// ── Game State ──
+let currentExercise = null;
+let currentExerciseIndex = 0;
+const totalExercises = 10;
+const completedExercises = [];
+
+function loadExercise() {
+  const generator = randomChoice(generators);
+  currentExercise = generator();
+  
+  // Display the given function with syntax highlighting
+  const givenDisplay = currentExercise.given
+    .replace(/function/g, '<span class="kw">function</span>')
+    .replace(/return/g, '<span class="kw">return</span>')
+    .replace(/var/g, '<span class="kw">var</span>')
+    .replace(/console/g, '<span class="fn">console</span>');
+  
+  document.getElementById('given-code').innerHTML = givenDisplay;
+  document.getElementById('user-input').value = '';
+  document.getElementById('feedback').textContent = '';
+  document.getElementById('input-wrapper').className = 'code-input-wrapper';
+  document.getElementById('btn-next').disabled = true;
+  
+  // Update progress dots
+  updateProgress();
+}
+
+function updateProgress() {
+  const container = document.getElementById('progress-dots');
+  container.innerHTML = '';
+  
+  for (let i = 0; i < totalExercises; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'dot';
+    if (i < currentExerciseIndex) {
+      dot.classList.add('completed');
+    } else if (i === currentExerciseIndex) {
+      dot.classList.add('active');
+    }
+    container.appendChild(dot);
+  }
+}
+
+function normalizeCode(code) {
+  return code
+    .replace(/\s+/g, ' ')
+    .replace(/\(\s+/g, '(')
+    .replace(/\s+\)/g, ')')
+    .replace(/{\s+/g, '{ ')
+    .replace(/\s+}/g, ' }')
+    .replace(/;\s*/g, ';')
+    .trim();
+}
+
+function checkAnswer() {
+  const userCode = document.getElementById('user-input').value.trim();
+  
+  if (!userCode) {
+    document.getElementById('feedback').textContent = 'Please enter your answer first.';
+    return;
+  }
+  
+  // First check: normalize and compare strings
+  const normalizedUser = normalizeCode(userCode);
+  const normalizedAnswer = normalizeCode(currentExercise.answer);
+  
+  if (normalizedUser === normalizedAnswer) {
+    markCorrect();
+    return;
+  }
+  
+  // Second check: functional equivalence
+  try {
+    const testCode = currentExercise.testCode.replace('ANSWER', userCode);
+    const testFn = new Function(testCode);
+    const passed = testFn();
+    
+    if (passed) {
+      markCorrect();
+    } else {
+      markIncorrect('Not quite! The function doesn\'t behave the same way.');
+    }
+  } catch (e) {
+    markIncorrect('Syntax error: ' + e.message);
+  }
+}
+
+function markCorrect() {
+  document.getElementById('input-wrapper').className = 'code-input-wrapper correct';
+  document.getElementById('feedback').textContent = '✓ Correct!';
+  document.getElementById('feedback').className = 'feedback-message correct';
+  document.getElementById('btn-next').disabled = false;
+  completedExercises.push(currentExercise);
+}
+
+function markIncorrect(message) {
+  document.getElementById('input-wrapper').className = 'code-input-wrapper incorrect';
+  document.getElementById('feedback').textContent = message;
+  document.getElementById('feedback').className = 'feedback-message incorrect';
+}
+
+function showHint() {
+  const hints = {
+    "Basic single expression": "💡 Arrow functions with a single expression don't need curly braces or the 'return' keyword. Just use => and the expression.",
+    "Multiple arguments": "💡 When you have multiple arguments, you need parentheses around them: (a, b) => ...",
+    "No arguments": "💡 When there are no arguments, use empty parentheses: () => ...",
+    "No return (side effects)": "💡 When the function body has statements (not just a single expression), you need curly braces: (arg) => { ... }",
+    "Multi-line body": "💡 Multi-line arrow functions need curly braces AND the 'return' keyword: (arg) => { ...; return value; }",
+    "Returning object literal": "💡 To return an object literal, wrap it in parentheses: (args) => ({ key: value }). Otherwise the braces look like a function body!"
+  };
+  
+  const hint = hints[currentExercise.category] || "💡 Think about the arrow function syntax!";
+  const feedbackEl = document.getElementById('feedback');
+  feedbackEl.textContent = hint;
+  feedbackEl.className = 'feedback-message';
+  feedbackEl.style.color = '#7a6020';
+  feedbackEl.style.fontWeight = '500';
+}
+
+function nextExercise() {
+  currentExerciseIndex++;
+  
+  if (currentExerciseIndex >= totalExercises) {
+    showCompletion();
+  } else {
+    loadExercise();
+  }
+}
+
+function showCompletion() {
+  document.getElementById('given-code').innerHTML = '<span class="kw">Congratulations!</span>';
+  document.getElementById('user-input').value = "You've completed all exercises! 🎉";
+  document.getElementById('user-input').disabled = true;
+  document.getElementById('feedback').textContent = 'Great job practicing arrow functions!';
+  document.getElementById('feedback').className = 'feedback-message correct';
+  document.getElementById('btn-check').disabled = true;
+  document.getElementById('btn-hint').disabled = true;
+  document.getElementById('btn-next').textContent = 'Restart';
+  document.getElementById('btn-next').disabled = false;
+  document.getElementById('btn-next').onclick = () => location.reload();
+}
+
+// ── Event Listeners ──
+document.getElementById('btn-check').addEventListener('click', checkAnswer);
+document.getElementById('btn-next').addEventListener('click', nextExercise);
+document.getElementById('btn-hint').addEventListener('click', showHint);
+
+// Allow Enter to check (with Shift+Enter for new line)
+document.getElementById('user-input').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey && !document.getElementById('btn-next').disabled) {
+    e.preventDefault();
+    if (document.getElementById('btn-next').disabled) {
+      checkAnswer();
+    } else {
+      nextExercise();
+    }
+  }
+});
+
+// ── Initialize ──
+loadExercise();
+</script>
+
+</body>
+</html>
