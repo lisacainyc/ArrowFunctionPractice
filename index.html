@@ -428,8 +428,14 @@ let currentExerciseIndex = 0;
 const totalExercises = 10;
 const completedExercises = [];
 
+// Shuffle generators at start for variety, but cycle through them evenly
+let generatorOrder = [...generators].sort(() => Math.random() - 0.5);
+let generatorIndex = 0;
+
 function loadExercise() {
-  const generator = randomChoice(generators);
+  // Cycle through generators in order to ensure even distribution
+  const generator = generatorOrder[generatorIndex % generatorOrder.length];
+  generatorIndex++;
   currentExercise = generator();
   
   // Display the given function with syntax highlighting
